@@ -175,6 +175,10 @@ function Dashboard() {
                           <span>👥 Guests</span>
                           <strong>{b.guests}</strong>
                         </div>
+                        <div className="db-bc-detail" style={{ gridColumn: '1 / -1', borderTop: '1px dashed #e2e8f0', paddingTop: '10px', marginTop: '5px' }}>
+                          <span>🕒 Booked On</span>
+                          <strong>{formatDate(b.bookedOn)}</strong>
+                        </div>
                       </div>
                       <div className="db-bc-footer">
                         <span className="db-bc-total">
@@ -232,6 +236,9 @@ function Dashboard() {
                         <div className="db-bc-detail">
                           <span>👥 Guests</span><strong>{b.guests}</strong>
                         </div>
+                        <div className="db-bc-detail" style={{ gridColumn: '1 / -1', borderTop: '1px dashed #e2e8f0', paddingTop: '10px', marginTop: '5px' }}>
+                          <span>🕒 Booked On</span><strong>{formatDate(b.bookedOn)}</strong>
+                        </div>
                       </div>
                       <div className="db-bc-footer">
                         <span className="db-bc-total">
@@ -258,7 +265,11 @@ function Dashboard() {
                         <span className="db-bc-icon">{b.roomIcon}</span>
                         <div>
                           <h3>{b.roomType} Room</h3>
-                          <span className="db-badge" style={{background:"#fff3e0",color:"#e65100",border:"1px solid #ffcc80"}}>Cancelled</span>
+                          {b.paymentStatus === "Declined" ? (
+                            <span className="db-badge" style={{background:"#fee2e2",color:"#dc2626",border:"1px solid #fca5a5"}}>🚫 Rejected by Admin</span>
+                          ) : (
+                            <span className="db-badge" style={{background:"#fff3e0",color:"#e65100",border:"1px solid #ffcc80"}}>Cancelled</span>
+                          )}
                         </div>
                         <div className="db-bc-id">#{b._id.slice(-6).toUpperCase()}</div>
                       </div>
@@ -275,11 +286,19 @@ function Dashboard() {
                         <div className="db-bc-detail">
                           <span>👥 Guests</span><strong>{b.guests}</strong>
                         </div>
+                        <div className="db-bc-detail" style={{ gridColumn: '1 / -1', borderTop: '1px dashed #e2e8f0', paddingTop: '10px', marginTop: '5px' }}>
+                          <span>🕒 Booked On</span><strong>{formatDate(b.bookedOn)}</strong>
+                        </div>
                       </div>
                       <div className="db-bc-footer">
                         <span className="db-bc-total" style={{color:"#9e9e9e",textDecoration:"line-through"}}>
                           ₹{Math.round(b.totalPrice * 1.12).toLocaleString("en-IN")}
                         </span>
+                        {b.paymentStatus === "Declined" && (
+                          <span style={{fontSize:'12px', color:'#dc2626', fontWeight:'600'}}>
+                            Payment was declined by hotel administration
+                          </span>
+                        )}
                       </div>
                     </div>
                   ))}

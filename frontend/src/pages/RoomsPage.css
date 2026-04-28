@@ -192,6 +192,7 @@
   background: white;
   border-radius: var(--radius-md);
   box-shadow: 0 10px 30px rgba(0,0,0,0.03);
+  border: 1px solid #f1f5f9;
 }
 
 .sort-wrapper {

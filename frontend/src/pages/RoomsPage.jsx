@@ -5,6 +5,7 @@ import {
   Tv, Coffee, Waves, Monitor, ArrowRight 
 } from "lucide-react";
 import BookingModal from "./BookingModal";
+import LoginModal from "./LoginModal";
 import "./RoomsPage.css";
 
 const API = "http://localhost:5000";
@@ -30,9 +31,30 @@ function RoomsPage() {
   const [sortBy, setSortBy] = useState("Recommended");
   const [roomTypes, setRoomTypes] = useState(["All"]);
   
-  // Modal
+  // Modals & Auth
+  const [isLoggedIn, setIsLoggedIn] = useState(
+    () => localStorage.getItem("jv_logged_in") === "true"
+  );
+  const [showLogin, setShowLogin] = useState(false);
   const [selectedRoom, setSelectedRoom] = useState(null);
   const [showBooking, setShowBooking] = useState(false);
+
+  const handleLoginSuccess = () => {
+    localStorage.setItem("jv_logged_in", "true");
+    setIsLoggedIn(true);
+    setShowLogin(false);
+    // Automatically open booking modal if a room was selected before login
+    if (selectedRoom) setShowBooking(true);
+  };
+
+  const handleBookClick = (room) => {
+    setSelectedRoom(room);
+    if (isLoggedIn) {
+      setShowBooking(true);
+    } else {
+      setShowLogin(true);
+    }
+  };
 
   useEffect(() => {
     fetch(`${API}/api/rooms`)
@@ -224,7 +246,7 @@ function RoomsPage() {
                         </div>
                         <button 
                           className="rc-book-btn"
-                          onClick={() => { setSelectedRoom(room); setShowBooking(true); }}
+                          onClick={() => handleBookClick(room)}
                         >
                           Book Now <ArrowRight size={16}/>
                         </button>
@@ -246,6 +268,13 @@ function RoomsPage() {
           )}
         </main>
       </div>
+
+      {showLogin && (
+        <LoginModal 
+          onClose={() => setShowLogin(false)} 
+          onLoginSuccess={handleLoginSuccess} 
+        />
+      )}
 
       {showBooking && (
         <BookingModal 

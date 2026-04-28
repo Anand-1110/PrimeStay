@@ -60,6 +60,13 @@ router.post('/', verifyToken, async (req, res) => {
     });
 
     const savedBooking = await newBooking.save();
+
+    // Automatically update the assigned room's status to 'Booked'
+    await Room.findOneAndUpdate(
+      { roomNumber: assignedRoom.roomNumber },
+      { status: 'Booked' }
+    );
+
     res.status(201).json(savedBooking);
   } catch (err) {
     res.status(500).json({ message: 'Server error creating booking', error: err.message });
@@ -222,13 +229,23 @@ router.patch('/:id/payment', verifyToken, async (req, res) => {
 router.patch('/:id/verify', verifyToken, async (req, res) => {
   try {
     const { paymentStatus } = req.body; // 'Verified' or 'Declined'
-    const status = paymentStatus === 'Verified' ? 'Confirmed' : 'Pending Payment';
+    const status = paymentStatus === 'Verified' ? 'Confirmed' : 'Cancelled';
     
     const booking = await Booking.findByIdAndUpdate(
       req.params.id,
       { paymentStatus, status },
       { new: true }
     );
+
+    if (!booking) return res.status(404).json({ message: 'Booking not found' });
+
+    // Automatically update the room status based on verification
+    if (paymentStatus === 'Verified') {
+      await Room.findOneAndUpdate({ roomNumber: booking.roomId }, { status: 'Booked' });
+    } else if (paymentStatus === 'Declined') {
+      await Room.findOneAndUpdate({ roomNumber: booking.roomId }, { status: 'Available' });
+    }
+
     res.json(booking);
   } catch (err) {
     res.status(500).json({ message: 'Error verifying payment', error: err.message });

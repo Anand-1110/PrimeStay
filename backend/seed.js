@@ -18,10 +18,12 @@ const seedDatabase = async () => {
     console.log("✅ Cleared existing database records.");
 
     // 2. Insert Admin User
+    const bcrypt = require('bcryptjs');
+    const hashedPassword = await bcrypt.hash("admin123", 12);
     await User.create({
       name: "Hotel Admin",
       email: "admin@johnvilla.com",
-      password: "admin123", // Strict password
+      password: hashedPassword, // Strict password
       role: "admin",
       memberSince: "2026"
     });

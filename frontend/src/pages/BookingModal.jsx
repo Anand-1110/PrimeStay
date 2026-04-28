@@ -81,15 +81,11 @@ function BookingModal({ room, onClose, existingBooking, mode = "new", onBookingU
       const data = await response.json();
       if (!response.ok) throw new Error(data.message || "Operation failed");
 
-      // 2. If it's a new booking, proceed to Payment Step OR Upload Payment Proof if available
+      // 2. If it's a new booking, proceed to Upload Payment Proof if available
       if (mode === "new") {
         setBookingId(data._id);
         if (paymentFile) {
           await uploadPaymentProof(data._id);
-        } else {
-          setStep(2);
-          setLoading(false);
-          return;
         }
       }
 
@@ -222,15 +218,15 @@ function BookingModal({ room, onClose, existingBooking, mode = "new", onBookingU
                   </div>
 
                   <div className="payment-notice">
-                    ⚠️ Your booking will be <strong>Confirmed</strong> once the admin verifies the payment proof.
+                    ⚠️ Your booking will be confirmed once payment is verified. (You can upload proof later).
                   </div>
 
                   {error && <div className="bm-error">{error}</div>}
 
                   <div className="bm-actions">
                     <button className="bm-back-btn" onClick={() => setStep(1)}>← Back</button>
-                    <button className="bm-confirm-btn" onClick={handleBooking} disabled={loading || !paymentFile}>
-                      {loading ? "Processing..." : "Complete Booking ✓"}
+                    <button className="bm-confirm-btn" onClick={handleBooking} disabled={loading}>
+                      {loading ? "Processing..." : (paymentFile ? "Complete Booking ✓" : "Skip & Book ✓")}
                     </button>
                   </div>
                 </motion.div>

@@ -21,7 +21,7 @@ function AdminDashboard() {
   const [rooms,    setRooms]    = useState([]);
   const [stats,    setStats]    = useState(null);
 
-  useEffect(() => {
+  const fetchAllData = () => {
     const token = getToken();
     Promise.all([
       fetch(`${API}/api/bookings`,    { headers: { "Authorization": `Bearer ${token}` } }).then(r => r.json()),
@@ -34,6 +34,10 @@ function AdminDashboard() {
       setRooms(Array.isArray(roomsData)        ? roomsData    : []);
       setStats(statsData);
     }).catch(err => console.error("Error fetching admin data:", err));
+  };
+
+  useEffect(() => {
+    fetchAllData();
   }, []);
 
   // --- Handlers ---
@@ -44,9 +48,13 @@ function AdminDashboard() {
         headers: { "Content-Type": "application/json", "Authorization": `Bearer ${getToken()}` },
         body: JSON.stringify({ paymentStatus })
       });
+      const data = await res.json();
       if (res.ok) {
-        const updated = await res.json();
-        setBookings(prev => prev.map(b => b._id === id ? updated : b));
+        // Refetch ALL data so stats, pie chart, room statuses all update instantly
+        fetchAllData();
+      } else {
+        console.error("Verify/Decline failed:", data);
+        alert(`Action failed: ${data.message || 'Unknown error'}`);
       }
     } catch (err) { console.error("Error verifying payment:", err); }
   };
@@ -222,8 +230,8 @@ function AdminDashboard() {
           <div className="ad-content">
             <div className="ad-stats-grid">
               <div className="ad-stat-card blue">
-                <div className="ad-stat-icon">🛏️</div>
-                <div><h3>{stats?.occupancy[1].value}/{rooms.length}</h3><p>Available Rooms</p></div>
+              <div className="ad-stat-icon">🛏️</div>
+                <div><h3>{rooms.filter(r => r.status === 'Available').length}/{rooms.length}</h3><p>Available Rooms</p></div>
               </div>
               <div className="ad-stat-card green">
                 <div className="ad-stat-icon">📋</div>
@@ -279,18 +287,6 @@ function AdminDashboard() {
               </div>
             </div>
 
-            <div className="ad-section">
-              <h2 className="ad-section-title">🛏️ Room Status Overview</h2>
-              <div className="ad-rooms-quick">
-                {rooms.map(r => (
-                  <div className="ad-room-chip" key={r.roomNumber}>
-                    <span className="ad-chip-num">#{r.roomNumber}</span>
-                    <span className="ad-chip-type">{r.type}</span>
-                    <span className={`ad-chip-status ${statusColor(r.status)}`}>{r.status}</span>
-                  </div>
-                ))}
-              </div>
-            </div>
           </div>
         )}
 
@@ -305,7 +301,7 @@ function AdminDashboard() {
                   <thead>
                     <tr>
                       <th>Room No.</th><th>Type</th><th>Price/Night</th>
-                      <th>Capacity</th><th>Image</th><th>Status</th><th>Change Status</th>
+                      <th>Capacity</th><th>Image</th><th>Current Booking</th><th>Status</th><th>Change Status</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -332,6 +328,27 @@ function AdminDashboard() {
                           >
                             📷 {r.image ? "Change" : "Upload"}
                           </button>
+                        </td>
+                        <td>
+                          {(() => {
+                            const roomBookings = bookings.filter(b => b.roomId === r.roomNumber && (b.status === "Confirmed" || b.status === "Pending Payment"));
+                            // Show active or latest booking
+                            const activeBooking = roomBookings.find(b => new Date(b.checkOut) >= new Date()) || roomBookings[roomBookings.length - 1];
+                            
+                            if (activeBooking) {
+                              return (
+                                <div style={{ fontSize: '13px', lineHeight: '1.4' }}>
+                                  <span style={{ fontWeight: '600', color: 'var(--primary)' }}>
+                                    {formatDate(activeBooking.checkIn)} - {formatDate(activeBooking.checkOut)}
+                                  </span>
+                                  <div style={{ color: 'var(--secondary)', fontSize: '11px', marginTop: '2px' }}>
+                                    {activeBooking.customerId}
+                                  </div>
+                                </div>
+                              );
+                            }
+                            return <span className="ad-no-proof">None</span>;
+                          })()}
                         </td>
                         <td>
                           <span className={`ad-badge ${statusColor(r.status)}`}>{r.status}</span>
@@ -425,7 +442,7 @@ function AdminDashboard() {
                     <thead>
                       <tr>
                         <th>Booking ID</th><th>Customer</th><th>Room</th>
-                        <th>Dates</th><th>Total</th><th>Payment Proof</th><th>Actions</th>
+                        <th>Dates</th><th>Booked On</th><th>Total</th><th>Status</th><th>Payment Proof</th><th>Actions</th>
                       </tr>
                     </thead>
                     <tbody>
@@ -435,7 +452,11 @@ function AdminDashboard() {
                           <td className="ad-mono" style={{fontSize:'12px'}}>{b.customerId}</td>
                           <td>{b.roomType} · #{b.roomId}</td>
                           <td>{formatDate(b.checkIn)} - {formatDate(b.checkOut)}</td>
+                          <td style={{fontSize:'12px', color:'var(--secondary)'}}>{formatDate(b.bookedOn)}</td>
                           <td>₹{(b.totalPrice || 0).toLocaleString("en-IN")}</td>
+                          <td>
+                            <span className={`ad-badge ${statusColor(b.status)}`}>{b.status}</span>
+                          </td>
                           <td>
                             {b.paymentProof ? (
                               <a href={`${API}${b.paymentProof}`} target="_blank" rel="noreferrer" className="ad-proof-link">View Proof 📄</a>
@@ -448,16 +469,16 @@ function AdminDashboard() {
                               <button 
                                 className="ad-action-btn verify" 
                                 onClick={() => handleVerifyPayment(b._id, 'Verified')}
-                                disabled={b.paymentStatus === 'Verified'}
+                                disabled={b.status === 'Cancelled' || b.paymentStatus === 'Verified'}
                               >
                                 {b.paymentStatus === 'Verified' ? '✓ Verified' : 'Verify'}
                               </button>
                               <button 
                                 className="ad-action-btn decline"
                                 onClick={() => handleVerifyPayment(b._id, 'Declined')}
-                                disabled={b.paymentStatus === 'Verified'}
+                                disabled={b.status === 'Cancelled' || b.paymentStatus === 'Verified'}
                               >
-                                Decline
+                                {b.status === 'Cancelled' ? 'Declined' : 'Decline'}
                               </button>
                             </div>
                           </td>

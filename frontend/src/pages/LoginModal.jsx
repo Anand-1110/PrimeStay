@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import { User, Mail, Lock, X, CheckCircle } from "lucide-react";
 import "./LoginModal.css";
 
 function LoginModal({ onClose, onLoginSuccess }) {
@@ -88,7 +89,7 @@ function LoginModal({ onClose, onLoginSuccess }) {
         {/* Brand */}
         <div className="modal-brand">
           <div className="modal-logo">🏨</div>
-          <h1 className="modal-title">John Villa</h1>
+          <h1 className="modal-title">Prime Stay</h1>
           <p className="modal-subtitle">Customer Portal</p>
         </div>
 
@@ -108,7 +109,7 @@ function LoginModal({ onClose, onLoginSuccess }) {
                 <div className="form-group">
                   <label>Your Name</label>
                   <div className="input-wrapper">
-                    <span className="input-icon">👤</span>
+                    <span className="input-icon"><User size={18} /></span>
                     <input type="text" name="name" placeholder="e.g. Rahul Sharma"
                       value={formData.name} onChange={handleChange} className="form-input" autoFocus />
                   </div>
@@ -118,7 +119,7 @@ function LoginModal({ onClose, onLoginSuccess }) {
               <div className="form-group">
                 <label>Email Address</label>
                 <div className="input-wrapper">
-                  <span className="input-icon">📧</span>
+                  <span className="input-icon"><Mail size={18} /></span>
                   <input type="email" name="email" placeholder="you@example.com"
                     value={formData.email} onChange={handleChange} className="form-input" />
                 </div>
@@ -127,7 +128,7 @@ function LoginModal({ onClose, onLoginSuccess }) {
               <div className="form-group">
                 <label>Password</label>
                 <div className="input-wrapper">
-                  <span className="input-icon">🔒</span>
+                  <span className="input-icon"><Lock size={18} /></span>
                   <input type="password" name="password" placeholder="Enter password"
                     value={formData.password} onChange={handleChange} className="form-input" />
                 </div>
