@@ -1,0 +1,582 @@
+/* =============================================
+   ADMIN DASHBOARD — AdminDashboard.css
+   ============================================= */
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap');
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+.ad-layout {
+  font-family: 'Poppins', sans-serif;
+  display: flex;
+  min-height: 100vh;
+  background: #f0f2f8;
+}
+
+/* =============================================
+   SIDEBAR
+   ============================================= */
+.ad-sidebar {
+  width: 240px;
+  min-width: 240px;
+  background: linear-gradient(180deg, #0d1b3e 0%, #1a237e 100%);
+  display: flex;
+  flex-direction: column;
+  padding: 0;
+  position: sticky;
+  top: 0;
+  height: 100vh;
+  overflow-y: auto;
+}
+
+.ad-sidebar-brand {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 28px 20px 24px;
+  border-bottom: 1px solid rgba(255,255,255,0.1);
+}
+
+.ad-sidebar-logo { font-size: 2rem; line-height: 1; }
+
+.ad-sidebar-brand h2 {
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: #fff;
+  line-height: 1;
+  margin-bottom: 3px;
+}
+
+.ad-sidebar-brand span {
+  font-size: 0.7rem;
+  color: rgba(255,255,255,0.5);
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+/* Nav */
+.ad-nav {
+  flex: 1;
+  padding: 20px 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.ad-nav-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 11px 16px;
+  border: none;
+  border-radius: 10px;
+  background: transparent;
+  color: rgba(255,255,255,0.65);
+  font-size: 0.9rem;
+  font-weight: 500;
+  cursor: pointer;
+  font-family: inherit;
+  text-align: left;
+  transition: background 0.2s, color 0.2s;
+}
+
+.ad-nav-item:hover {
+  background: rgba(255,255,255,0.1);
+  color: #fff;
+}
+
+.ad-nav-item.active {
+  background: rgba(255,255,255,0.18);
+  color: #fff;
+  font-weight: 700;
+}
+
+.ad-nav-icon { font-size: 1.1rem; }
+
+/* Sidebar footer */
+.ad-sidebar-footer {
+  padding: 16px 12px 24px;
+  border-top: 1px solid rgba(255,255,255,0.1);
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.ad-visit-btn {
+  background: rgba(255,255,255,0.1);
+  color: rgba(255,255,255,0.8);
+  border: none;
+  padding: 9px 14px;
+  border-radius: 8px;
+  font-size: 0.82rem;
+  font-weight: 600;
+  cursor: pointer;
+  font-family: inherit;
+  transition: background 0.2s;
+  text-align: left;
+}
+.ad-visit-btn:hover { background: rgba(255,255,255,0.2); }
+
+.ad-signout-btn {
+  background: rgba(220,38,38,0.15);
+  color: #fc8181;
+  border: 1px solid rgba(220,38,38,0.3);
+  padding: 9px 14px;
+  border-radius: 8px;
+  font-size: 0.82rem;
+  font-weight: 600;
+  cursor: pointer;
+  font-family: inherit;
+  transition: background 0.2s;
+  text-align: left;
+}
+.ad-signout-btn:hover { background: rgba(220,38,38,0.3); }
+
+/* =============================================
+   MAIN CONTENT
+   ============================================= */
+.ad-main {
+  flex: 1;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Topbar */
+.ad-topbar {
+  background: #fff;
+  padding: 20px 32px;
+  border-bottom: 1px solid #e2e8f0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+}
+
+.ad-page-title {
+  font-size: 1.3rem;
+  font-weight: 700;
+  color: #1a237e;
+}
+
+.ad-page-sub {
+  font-size: 0.8rem;
+  color: #94a3b8;
+  margin-top: 2px;
+}
+
+.ad-admin-pill {
+  background: #e8eaf6;
+  color: #3949ab;
+  padding: 7px 16px;
+  border-radius: 20px;
+  font-size: 0.82rem;
+  font-weight: 600;
+}
+
+/* Content area */
+.ad-content {
+  padding: 28px 32px 48px;
+  display: flex;
+  flex-direction: column;
+  gap: 28px;
+}
+
+/* =============================================
+   STAT CARDS
+   ============================================= */
+.ad-stats-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 20px;
+}
+
+.ad-stat-card {
+  background: #fff;
+  border-radius: 16px;
+  padding: 22px 20px;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  box-shadow: 0 2px 12px rgba(0,0,0,0.05);
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.ad-stat-card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 8px 24px rgba(0,0,0,0.1);
+}
+
+.ad-stat-icon {
+  font-size: 2rem;
+  width: 52px;
+  height: 52px;
+  border-radius: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.ad-stat-card.blue  .ad-stat-icon { background: #e8eaf6; }
+.ad-stat-card.green .ad-stat-icon { background: #e8f5e9; }
+.ad-stat-card.purple .ad-stat-icon { background: #f3e5f5; }
+.ad-stat-card.orange .ad-stat-icon { background: #fff3e0; }
+
+.ad-stat-card h3 {
+  font-size: 1.4rem;
+  font-weight: 700;
+  color: #1a237e;
+  line-height: 1;
+  margin-bottom: 4px;
+}
+
+.ad-stat-card p {
+  font-size: 0.78rem;
+  color: #7986a8;
+}
+
+/* =============================================
+   SECTIONS
+   ============================================= */
+.ad-section {
+  background: #fff;
+  border-radius: 16px;
+  padding: 24px 24px 20px;
+  box-shadow: 0 2px 12px rgba(0,0,0,0.05);
+}
+
+.ad-section-title {
+  font-size: 1rem;
+  font-weight: 700;
+  color: #1a237e;
+  margin-bottom: 6px;
+}
+
+.ad-section-sub {
+  font-size: 0.82rem;
+  color: #94a3b8;
+  margin-bottom: 18px;
+}
+
+.ad-section-head-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 16px;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+/* =============================================
+   TABLES
+   ============================================= */
+.ad-table-wrap {
+  overflow-x: auto;
+  margin-top: 16px;
+  border-radius: 10px;
+  border: 1px solid #e8eaf6;
+}
+
+.ad-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.86rem;
+}
+
+.ad-table thead {
+  background: #f5f7ff;
+}
+
+.ad-table th {
+  padding: 12px 16px;
+  text-align: left;
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: #455a7e;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  white-space: nowrap;
+}
+
+.ad-table td {
+  padding: 13px 16px;
+  color: #2d3748;
+  border-top: 1px solid #f0f4ff;
+  white-space: nowrap;
+}
+
+.ad-table tbody tr:hover { background: #f9faff; }
+
+.ad-mono {
+  font-family: monospace;
+  font-size: 0.82rem;
+  color: #7986a8;
+}
+
+/* =============================================
+   BADGES & STATUS
+   ============================================= */
+.ad-badge {
+  display: inline-block;
+  padding: 3px 10px;
+  border-radius: 12px;
+  font-size: 0.75rem;
+  font-weight: 700;
+}
+
+.status-green  { background: #e8f5e9; color: #2e7d32; border: 1px solid #a5d6a7; }
+.status-blue   { background: #e3f2fd; color: #1565c0; border: 1px solid #90caf9; }
+.status-orange { background: #fff3e0; color: #e65100; border: 1px solid #ffcc80; }
+.status-red    { background: #fff5f5; color: #c62828; border: 1px solid #f9a8a8; }
+
+/* =============================================
+   ROOM STATUS SELECT
+   ============================================= */
+.ad-status-select {
+  padding: 7px 12px;
+  border: 1.5px solid #dde3f0;
+  border-radius: 8px;
+  font-size: 0.84rem;
+  font-family: inherit;
+  color: #1a237e;
+  background: #f5f7ff;
+  cursor: pointer;
+  outline: none;
+  transition: border-color 0.2s;
+}
+
+.ad-status-select:focus { border-color: #3949ab; }
+
+/* =============================================
+   FILTER BUTTONS
+   ============================================= */
+.ad-filter-row {
+  display: flex;
+  gap: 8px;
+}
+
+.ad-filter-btn {
+  padding: 7px 18px;
+  border: 1.5px solid #dde3f0;
+  border-radius: 20px;
+  background: #fff;
+  color: #455a7e;
+  font-size: 0.84rem;
+  font-weight: 600;
+  cursor: pointer;
+  font-family: inherit;
+  transition: all 0.2s;
+}
+
+.ad-filter-btn:hover { border-color: #3949ab; color: #3949ab; }
+
+.ad-filter-btn.active {
+  background: #1a237e;
+  border-color: #1a237e;
+  color: #fff;
+}
+
+/* =============================================
+   ROOMS QUICK VIEW
+   ============================================= */
+.ad-rooms-quick {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 12px;
+  margin-top: 14px;
+}
+
+.ad-room-chip {
+  background: #f5f7ff;
+  border: 1.5px solid #e8eaf6;
+  border-radius: 12px;
+  padding: 14px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.ad-chip-num {
+  font-size: 0.74rem;
+  font-weight: 700;
+  color: #94a3b8;
+  font-family: monospace;
+}
+
+.ad-chip-type {
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: #1a237e;
+}
+
+/* =============================================
+   EMPTY STATE
+   ============================================= */
+.ad-empty {
+  text-align: center;
+  color: #94a3b8;
+  font-size: 0.9rem;
+  padding: 36px 20px;
+}
+
+/* =============================================
+   RESPONSIVE
+   ============================================= */
+@media (max-width: 1024px) {
+  .ad-stats-grid { grid-template-columns: repeat(2, 1fr); }
+}
+
+@media (max-width: 768px) {
+  .ad-sidebar   { display: none; }
+  .ad-content   { padding: 20px 16px; }
+  .ad-topbar    { padding: 16px 20px; }
+  .ad-stats-grid { grid-template-columns: repeat(2, 1fr); }
+}
+
+/* =============================================
+   ROOM IMAGE THUMBNAIL
+   ============================================= */
+.ad-room-thumb {
+  width: 60px;
+  height: 44px;
+  object-fit: cover;
+  border-radius: 7px;
+  border: 1.5px solid #e8eaf6;
+  display: block;
+  margin-bottom: 6px;
+}
+
+.ad-no-image {
+  font-size: 0.75rem;
+  color: #bdbdbd;
+  display: block;
+  margin-bottom: 6px;
+}
+
+.ad-upload-btn {
+  background: #e8eaf6;
+  border: 1px solid #c5cae9;
+  color: #3949ab;
+  padding: 4px 10px;
+  border-radius: 6px;
+  font-size: 0.76rem;
+  font-weight: 600;
+  cursor: pointer;
+  font-family: inherit;
+  transition: background 0.2s;
+  white-space: nowrap;
+}
+.ad-upload-btn:hover { background: #c5cae9; }
+
+/* =============================================
+   IMAGE UPLOAD PANEL
+   ============================================= */
+.ad-upload-panel {
+  background: #fff;
+  border-radius: 16px;
+  padding: 24px;
+  box-shadow: 0 2px 12px rgba(0,0,0,0.05);
+  border: 2px dashed #c5cae9;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.ad-upload-panel-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.ad-upload-panel-header h3 {
+  font-size: 1rem;
+  font-weight: 700;
+  color: #1a237e;
+}
+
+.ad-upload-close {
+  background: #f0f2f8;
+  border: none;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  font-size: 0.9rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #455a7e;
+  transition: background 0.2s;
+}
+.ad-upload-close:hover { background: #e8eaf6; }
+
+.ad-upload-preview {
+  width: 100%;
+  max-height: 240px;
+  object-fit: cover;
+  border-radius: 10px;
+  border: 1.5px solid #e8eaf6;
+}
+
+.ad-upload-controls {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.ad-file-label {
+  display: inline-block;
+  padding: 10px 20px;
+  background: #e8eaf6;
+  color: #1a237e;
+  border-radius: 8px;
+  font-size: 0.88rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s;
+  border: 1.5px solid #c5cae9;
+}
+.ad-file-label:hover { background: #c5cae9; }
+
+.ad-save-image-btn {
+  padding: 10px 22px;
+  background: linear-gradient(135deg, #1a237e, #3949ab);
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  font-size: 0.88rem;
+  font-weight: 700;
+  cursor: pointer;
+  font-family: inherit;
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+.ad-save-image-btn:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 18px rgba(26,35,126,0.3);
+}
+.ad-save-image-btn:disabled { opacity: 0.6; cursor: not-allowed; }
+
+.ad-upload-success {
+  background: #e8f5e9;
+  color: #2e7d32;
+  border: 1px solid #a5d6a7;
+  padding: 10px 16px;
+  border-radius: 8px;
+  font-size: 0.88rem;
+  font-weight: 600;
+}
+
+.ad-upload-error {
+  background: #fff5f5;
+  color: #c62828;
+  border: 1px solid #f9a8a8;
+  padding: 10px 16px;
+  border-radius: 8px;
+  font-size: 0.88rem;
+  font-weight: 600;
+}
+

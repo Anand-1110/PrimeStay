@@ -1,0 +1,494 @@
+/* =============================================
+   DASHBOARD — Dashboard.css
+   ============================================= */
+
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap');
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+.dashboard {
+  font-family: 'Poppins', sans-serif;
+  min-height: 100vh;
+  background: linear-gradient(160deg, #e8eaf6 0%, #f0f4ff 50%, #e3f2fd 100%);
+  display: flex;
+  flex-direction: column;
+}
+
+/* =============================================
+   NAVBAR
+   ============================================= */
+.db-navbar {
+  background: #fff;
+  box-shadow: 0 2px 16px rgba(26,35,126,0.08);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 40px;
+  height: 64px;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+}
+
+.db-logo {
+  font-size: 1.3rem;
+  font-weight: 700;
+  color: #1a237e;
+}
+
+.db-nav-right {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.db-back-btn {
+  background: #f0f4ff;
+  color: #1a237e;
+  border: 1.5px solid #c5cae9;
+  padding: 8px 18px;
+  border-radius: 8px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  cursor: pointer;
+  font-family: inherit;
+  transition: background 0.2s;
+}
+.db-back-btn:hover { background: #e8eaf6; }
+
+.db-signout-btn {
+  background: transparent;
+  color: #c62828;
+  border: 1.5px solid #ef9a9a;
+  padding: 8px 18px;
+  border-radius: 8px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  cursor: pointer;
+  font-family: inherit;
+  transition: background 0.2s, color 0.2s;
+}
+.db-signout-btn:hover { background: #c62828; color: #fff; border-color: #c62828; }
+
+/* =============================================
+   CONTENT WRAPPER
+   ============================================= */
+.db-content {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 36px 24px 48px;
+  flex: 1;
+  width: 100%;
+}
+
+/* =============================================
+   WELCOME BANNER
+   ============================================= */
+.db-welcome {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  background: linear-gradient(135deg, #1a237e 0%, #283593 50%, #3949ab 100%);
+  border-radius: 20px;
+  padding: 28px 36px;
+  margin-bottom: 36px;
+  color: #fff;
+  box-shadow: 0 10px 40px rgba(26,35,126,0.2);
+}
+
+.db-avatar {
+  width: 64px;
+  height: 64px;
+  background: rgba(255,255,255,0.2);
+  border: 3px solid rgba(255,255,255,0.4);
+  border-radius: 50%;
+  font-size: 1.8rem;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #fff;
+  flex-shrink: 0;
+  backdrop-filter: blur(4px);
+}
+
+.db-welcome h1 {
+  font-size: 1.5rem;
+  font-weight: 700;
+  margin-bottom: 4px;
+}
+
+.db-welcome h1 span { color: #90caf9; }
+
+.db-welcome p {
+  font-size: 0.9rem;
+  opacity: 0.8;
+}
+
+/* =============================================
+   MAIN GRID
+   ============================================= */
+.db-grid {
+  display: grid;
+  grid-template-columns: 1fr 320px;
+  gap: 28px;
+  align-items: start;
+}
+
+/* =============================================
+   SECTIONS
+   ============================================= */
+.db-section {
+  background: #fff;
+  border-radius: 16px;
+  padding: 28px;
+  box-shadow: 0 4px 20px rgba(26,35,126,0.07);
+  margin-bottom: 24px;
+}
+
+.db-section:last-child { margin-bottom: 0; }
+
+.db-section-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 22px;
+}
+
+.db-section-header h2 {
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: #1a237e;
+  flex: 1;
+}
+
+.db-count {
+  background: #e8eaf6;
+  color: #3949ab;
+  padding: 3px 12px;
+  border-radius: 20px;
+  font-size: 0.85rem;
+  font-weight: 700;
+}
+
+/* =============================================
+   BOOKING CARDS
+   ============================================= */
+.db-bookings-list { display: flex; flex-direction: column; gap: 16px; }
+
+.db-booking-card {
+  border: 1.5px solid #e8eaf6;
+  border-radius: 14px;
+  padding: 20px;
+  transition: box-shadow 0.2s, transform 0.2s;
+  background: #fafbff;
+}
+.db-booking-card:hover {
+  box-shadow: 0 6px 25px rgba(26,35,126,0.1);
+  transform: translateY(-2px);
+}
+.db-booking-card.past {
+  opacity: 0.75;
+  background: #f9f9f9;
+}
+
+.db-bc-header {
+  display: flex;
+  align-items: flex-start;
+  gap: 14px;
+  margin-bottom: 16px;
+}
+
+.db-bc-icon { font-size: 2rem; line-height: 1; }
+
+.db-bc-header h3 {
+  font-size: 1rem;
+  color: #1a237e;
+  margin-bottom: 5px;
+}
+
+.db-bc-id {
+  margin-left: auto;
+  font-size: 0.78rem;
+  color: #7986a8;
+  background: #e8eaf6;
+  padding: 3px 10px;
+  border-radius: 6px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+/* Status Badges */
+.db-badge {
+  display: inline-block;
+  padding: 2px 10px;
+  border-radius: 12px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.3px;
+}
+.db-badge.upcoming {
+  background: #e8f5e9;
+  color: #2e7d32;
+  border: 1px solid #a5d6a7;
+}
+.db-badge.past {
+  background: #f5f5f5;
+  color: #757575;
+  border: 1px solid #e0e0e0;
+}
+
+/* Booking Details Grid */
+.db-bc-body {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 12px;
+  background: #f0f4ff;
+  border-radius: 10px;
+  padding: 14px 16px;
+  margin-bottom: 14px;
+}
+
+.db-bc-detail {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+.db-bc-detail span {
+  font-size: 0.74rem;
+  color: #7986a8;
+}
+.db-bc-detail strong {
+  font-size: 0.88rem;
+  color: #1a237e;
+}
+
+/* Booking Footer */
+.db-bc-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.db-bc-total {
+  font-weight: 700;
+  color: #1a237e;
+  font-size: 1rem;
+}
+
+.db-bc-actions {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.db-modify-btn {
+  background: #f0f4ff;
+  border: 1.5px solid #c5cae9;
+  color: #1a237e;
+  padding: 7px 16px;
+  border-radius: 8px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+  font-family: inherit;
+  transition: background 0.2s, box-shadow 0.2s;
+}
+.db-modify-btn:hover {
+  background: #e8eaf6;
+  box-shadow: 0 3px 10px rgba(26,35,126,0.15);
+}
+
+.db-cancel-btn {
+  background: transparent;
+  border: 1.5px solid #ef9a9a;
+  color: #c62828;
+  padding: 7px 16px;
+  border-radius: 8px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+  font-family: inherit;
+  transition: background 0.2s, color 0.2s;
+}
+.db-cancel-btn:hover { background: #c62828; color: #fff; border-color: #c62828; }
+
+/* =============================================
+   EMPTY STATE
+   ============================================= */
+.db-empty {
+  text-align: center;
+  padding: 36px 20px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+}
+.db-empty-icon { font-size: 3rem; }
+.db-empty p { color: #7986a8; font-size: 0.95rem; }
+
+.db-book-btn {
+  background: linear-gradient(135deg, #1a237e, #3949ab);
+  color: #fff;
+  border: none;
+  padding: 10px 24px;
+  border-radius: 10px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  cursor: pointer;
+  font-family: inherit;
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+.db-book-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 20px rgba(26,35,126,0.25);
+}
+
+/* =============================================
+   SIDEBAR — ACCOUNT CARD
+   ============================================= */
+.db-account-card {
+  background: #fff;
+  border-radius: 16px;
+  padding: 28px 24px;
+  box-shadow: 0 4px 20px rgba(26,35,126,0.07);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 14px;
+  text-align: center;
+  position: sticky;
+  top: 80px;
+}
+
+.db-account-avatar {
+  width: 72px;
+  height: 72px;
+  background: linear-gradient(135deg, #1a237e, #3949ab);
+  border-radius: 50%;
+  font-size: 2rem;
+  font-weight: 700;
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 6px 20px rgba(26,35,126,0.25);
+}
+
+.db-account-card h3 {
+  font-size: 1.15rem;
+  color: #1a237e;
+  font-weight: 700;
+}
+
+.db-account-email {
+  font-size: 0.83rem;
+  color: #7986a8;
+  word-break: break-all;
+}
+
+.db-account-stats {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  width: 100%;
+  background: #f0f4ff;
+  border-radius: 12px;
+  padding: 14px;
+}
+
+.db-acc-stat {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+.db-acc-stat span {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: #1a237e;
+}
+.db-acc-stat p {
+  font-size: 0.75rem;
+  color: #7986a8;
+}
+
+.db-account-info {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  border-top: 1px solid #e8eaf6;
+  padding-top: 14px;
+}
+
+.db-info-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 0.84rem;
+}
+.db-info-row span { color: #7986a8; }
+.db-info-row strong { color: #1a237e; font-weight: 600; text-align: right; max-width: 55%; word-break: break-all; }
+
+.db-browse-btn {
+  width: 100%;
+  background: linear-gradient(135deg, #1a237e, #3949ab);
+  color: #fff;
+  border: none;
+  padding: 12px;
+  border-radius: 10px;
+  font-size: 0.9rem;
+  font-weight: 700;
+  cursor: pointer;
+  font-family: inherit;
+  transition: transform 0.2s, box-shadow 0.2s;
+  margin-top: 4px;
+}
+.db-browse-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 20px rgba(26,35,126,0.25);
+}
+
+.db-signout-full {
+  width: 100%;
+  background: transparent;
+  color: #c62828;
+  border: 1.5px solid #ef9a9a;
+  padding: 10px;
+  border-radius: 10px;
+  font-size: 0.88rem;
+  font-weight: 600;
+  cursor: pointer;
+  font-family: inherit;
+  transition: background 0.2s, color 0.2s;
+}
+.db-signout-full:hover { background: #c62828; color: #fff; border-color: #c62828; }
+
+/* =============================================
+   FOOTER
+   ============================================= */
+.db-footer {
+  text-align: center;
+  padding: 20px;
+  font-size: 0.82rem;
+  color: #9fa8c7;
+  border-top: 1px solid #e8eaf6;
+  background: #fff;
+}
+
+/* =============================================
+   RESPONSIVE
+   ============================================= */
+@media (max-width: 900px) {
+  .db-grid { grid-template-columns: 1fr; }
+  .db-sidebar { order: -1; }
+  .db-account-card { position: static; }
+}
+
+@media (max-width: 600px) {
+  .db-navbar { padding: 0 20px; }
+  .db-content { padding: 20px 14px 36px; }
+  .db-welcome { padding: 20px; flex-direction: column; text-align: center; }
+  .db-bc-body { grid-template-columns: repeat(2, 1fr); }
+  .db-section { padding: 18px; }
+}

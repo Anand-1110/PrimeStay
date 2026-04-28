@@ -1,0 +1,54 @@
+# =========================
+#   NODE - Frontend & Backend
+# =========================
+node_modules/
+package-lock.json
+
+# =========================
+#   ENVIRONMENT VARIABLES
+# =========================
+.env
+.env.local
+.env.development
+.env.production
+.env.test
+
+# =========================
+#   BUILD OUTPUTS (Frontend)
+# =========================
+dist/
+build/
+coverage/
+.vite/
+
+# =========================
+#   UPLOADS (Backend)
+# =========================
+backend/uploads/
+
+# =========================
+#   LOGS
+# =========================
+logs/
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# =========================
+#   OS GENERATED FILES
+# =========================
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# =========================
+#   IDE & EDITOR FILES
+# =========================
+.idea/
+.vscode/
+*.swp
+*.swo
+*.suo
+*.user
