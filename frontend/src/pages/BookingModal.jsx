@@ -1,273 +1,260 @@
 import React, { useState, useEffect } from "react";
+import Calendar from "react-calendar";
+import "react-calendar/dist/Calendar.css";
+import { motion, AnimatePresence } from "framer-motion";
+import { X, Calendar as CalendarIcon, Users, CreditCard, CheckCircle, Upload } from "lucide-react";
 import "./BookingModal.css";
 
-// Helper to get the auth token
 const getToken = () => localStorage.getItem("jv_token") || "";
+const API = "http://localhost:5000";
 
-/**
- * BookingModal — used for both NEW bookings and EDITING existing ones.
- *
- * Props:
- *  - room           {Object}  Room data (required for new bookings)
- *  - onClose        {fn}      Close the modal
- *  - existingBooking {Object} Booking to edit (only for edit mode)
- *  - mode           {string}  "new" | "edit"  (default: "new")
- *  - onBookingUpdated {fn}    Called after a successful edit (optional)
- */
 function BookingModal({ room, onClose, existingBooking, mode = "new", onBookingUpdated }) {
-  const today = new Date().toISOString().split("T")[0];
-
-  // In edit mode, pre-fill from the existing booking
-  const [formData, setFormData] = useState({
-    checkIn:  mode === "edit" ? existingBooking?.checkIn?.split("T")[0]  || "" : "",
-    checkOut: mode === "edit" ? existingBooking?.checkOut?.split("T")[0] || "" : "",
-    guests:   mode === "edit" ? existingBooking?.guests || 1 : 1,
-  });
-
-  const [error, setError]     = useState("");
+  const [step, setStep] = useState(1); // 1: Dates, 2: Payment
+  const [dateRange, setDateRange] = useState(
+    mode === "edit" && existingBooking 
+      ? [new Date(existingBooking.checkIn), new Date(existingBooking.checkOut)]
+      : [new Date(), new Date(new Date().setDate(new Date().getDate() + 1))]
+  );
+  
+  const [guests, setGuests] = useState(mode === "edit" ? existingBooking?.guests || 1 : 1);
+  const [paymentFile, setPaymentFile] = useState(null);
+  const [paymentPreview, setPaymentPreview] = useState(null);
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(false);
+  const [error, setError] = useState("");
   const [bookingId, setBookingId] = useState("");
 
-  // The room object — for new mode it's prop `room`, for edit mode derive from booking
   const activeRoom = mode === "edit"
-    ? { type: existingBooking?.roomType, icon: existingBooking?.roomIcon, roomNumber: existingBooking?.roomId, price: existingBooking ? Math.round(existingBooking.totalPrice / existingBooking.nights) : 0 }
+    ? { 
+        type: existingBooking?.roomType, 
+        icon: existingBooking?.roomIcon, 
+        roomNumber: existingBooking?.roomId, 
+        price: existingBooking ? Math.round(existingBooking.totalPrice / existingBooking.nights / 1.12) : 0 
+      }
     : room;
 
-  // Escape key closes modal
-  useEffect(() => {
-    const handleKey = (e) => { if (e.key === "Escape") onClose(); };
-    document.addEventListener("keydown", handleKey);
-    return () => document.removeEventListener("keydown", handleKey);
-  }, [onClose]);
+  const checkIn = dateRange[0];
+  const checkOut = dateRange[1];
+  const nights = checkIn && checkOut ? Math.max(1, Math.ceil((checkOut - checkIn) / (1000 * 60 * 60 * 24))) : 0;
+  const totalPrice = nights * (activeRoom?.price || 0);
+  const finalTotal = Math.round(totalPrice * 1.12);
 
-  // Lock background scroll
-  useEffect(() => {
-    document.body.style.overflow = "hidden";
-    return () => { document.body.style.overflow = ""; };
-  }, []);
-
-  const calcNights = () => {
-    if (!formData.checkIn || !formData.checkOut) return 0;
-    const diff = new Date(formData.checkOut) - new Date(formData.checkIn);
-    return Math.max(0, Math.ceil(diff / (1000 * 60 * 60 * 24)));
+  const handleFileSelect = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      setPaymentFile(file);
+      setPaymentPreview(URL.createObjectURL(file));
+    }
   };
 
-  const nights = calcNights();
-  const pricePerNight = activeRoom?.price || 0;
-  const total = nights * pricePerNight;
-
-  const handleChange = (e) => {
-    setError("");
-    setFormData((prev) => ({ ...prev, [e.target.name]: e.target.value }));
-  };
-
-  const handleSubmit = (e) => {
-    e.preventDefault();
-
-    if (!formData.checkIn || !formData.checkOut) {
-      setError("Please select check-in and check-out dates.");
-      return;
-    }
-    if (nights <= 0) {
-      setError("Check-out date must be after check-in date.");
-      return;
-    }
-
+  const handleBooking = async () => {
     setLoading(true);
-
-    const submitBooking = async () => {
-      try {
-        const token = getToken();
-
-        if (mode === "edit") {
-          // ── EDIT MODE — PUT /api/bookings/:id ─────────────────────────────
-          const response = await fetch(`http://localhost:5000/api/bookings/${existingBooking._id}`, {
-            method: "PUT",
-            headers: {
-              "Content-Type": "application/json",
-              "Authorization": `Bearer ${token}`
-            },
-            body: JSON.stringify({
-              checkIn:  formData.checkIn,
-              checkOut: formData.checkOut,
-              guests:   Number(formData.guests)
-            })
-          });
-
-          const updatedBooking = await response.json();
-          if (!response.ok) throw new Error(updatedBooking.message || "Failed to update booking");
-
-          setLoading(false);
-          setSuccess(true);
-          if (onBookingUpdated) onBookingUpdated(updatedBooking);
-
-        } else {
-          // ── NEW MODE — POST /api/bookings ──────────────────────────────────
-          // We send roomType (not roomId) — the backend auto-assigns
-          // the first available room of this type with no date conflict.
-          const response = await fetch("http://localhost:5000/api/bookings", {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-              "Authorization": `Bearer ${token}`
-            },
-            body: JSON.stringify({
-              customerId: localStorage.getItem("jv_user_email") || "guest",
-              roomType:   room.type,
-              roomIcon:   room.icon,
-              checkIn:    formData.checkIn,
-              checkOut:   formData.checkOut,
-              totalPrice: Math.round(total * 1.12),
-              guests:     Number(formData.guests),
-              nights
-            })
-          });
-
-          const savedBooking = await response.json();
-          if (!response.ok) throw new Error(savedBooking.message || "Failed to book");
-
-          setBookingId(savedBooking._id.slice(-6).toUpperCase());
-          setLoading(false);
-          setSuccess(true);
-        }
-      } catch (err) {
-        setLoading(false);
-        setError(err.message);
+    setError("");
+    try {
+      const token = getToken();
+      
+      // 1. Create/Update the booking
+      let response;
+      if (mode === "edit") {
+        response = await fetch(`${API}/api/bookings/${existingBooking._id}`, {
+          method: "PUT",
+          headers: { "Content-Type": "application/json", "Authorization": `Bearer ${token}` },
+          body: JSON.stringify({ checkIn, checkOut, guests })
+        });
+      } else {
+        response = await fetch(`${API}/api/bookings`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json", "Authorization": `Bearer ${token}` },
+          body: JSON.stringify({
+            customerId: localStorage.getItem("jv_user_email"),
+            roomType: activeRoom.type,
+            roomIcon: activeRoom.icon,
+            checkIn,
+            checkOut,
+            guests,
+            totalPrice: finalTotal,
+            nights
+          })
+        });
       }
-    };
 
-    submitBooking();
+      const data = await response.json();
+      if (!response.ok) throw new Error(data.message || "Operation failed");
+
+      // 2. If it's a new booking, proceed to Payment Step OR Upload Payment Proof if available
+      if (mode === "new") {
+        setBookingId(data._id);
+        if (paymentFile) {
+          await uploadPaymentProof(data._id);
+        } else {
+          setStep(2);
+          setLoading(false);
+          return;
+        }
+      }
+
+      setSuccess(true);
+      if (onBookingUpdated) onBookingUpdated(data);
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setLoading(false);
+    }
   };
 
-  const formatDate = (d) => {
-    if (!d) return "";
-    const dateObj = new Date(d);
-    return isNaN(dateObj) ? "Invalid Date" : dateObj.toLocaleDateString("en-IN", {
-      day: "numeric", month: "short", year: "numeric",
+  const uploadPaymentProof = async (id) => {
+    if (!paymentFile) return;
+    const formData = new FormData();
+    formData.append("roomImage", paymentFile); // Reusing the same multer field
+
+    const uploadRes = await fetch(`${API}/api/upload`, {
+      method: "POST",
+      headers: { "Authorization": `Bearer ${getToken()}` },
+      body: formData
     });
+    const uploadData = await uploadRes.json();
+    if (!uploadRes.ok) throw new Error("Payment proof upload failed");
+
+    await fetch(`${API}/api/bookings/${id}/payment`, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json", "Authorization": `Bearer ${getToken()}` },
+      body: JSON.stringify({ paymentProof: uploadData.imageUrl })
+    });
+    setSuccess(true);
   };
 
-  const isEdit = mode === "edit";
+  const formatDate = (d) => d ? d.toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric" }) : "—";
 
   return (
     <div className="bm-overlay" onClick={onClose}>
-      <div className="bm-card" onClick={(e) => e.stopPropagation()}>
-
+      <motion.div 
+        className="bm-card" 
+        onClick={(e) => e.stopPropagation()}
+        initial={{ opacity: 0, y: 50, scale: 0.9 }}
+        animate={{ opacity: 1, y: 0, scale: 1 }}
+        exit={{ opacity: 0, y: 50, scale: 0.9 }}
+      >
         {!success ? (
           <>
-            {/* Header */}
             <div className="bm-header">
               <div className="bm-room-info">
                 <span className="bm-room-icon">{activeRoom?.icon}</span>
                 <div>
-                  <h2>{isEdit ? "Modify Booking" : `Book ${activeRoom?.type} Room`}</h2>
-                  <p className="bm-price-label">
-                    ₹{pricePerNight.toLocaleString("en-IN")}
-                    <span>/night</span>
-                  </p>
+                  <h2>{mode === "edit" ? "Modify Booking" : `Experience ${activeRoom?.type}`}</h2>
+                  <p className="bm-price-label">₹{activeRoom?.price?.toLocaleString("en-IN")}<span>/night</span></p>
                 </div>
               </div>
-              <button className="bm-close" onClick={onClose}>✕</button>
+              <button className="bm-close" onClick={onClose}><X size={20}/></button>
             </div>
 
-            {isEdit && (
-              <div className="bm-edit-notice">
-                ✏️ Editing booking for <strong>{activeRoom?.type} Room #{activeRoom?.roomNumber}</strong>
-              </div>
-            )}
+            <div className="bm-stepper">
+              <div className={`step ${step >= 1 ? "active" : ""}`}>1. Details</div>
+              <div className={`step ${step >= 2 ? "active" : ""}`}>2. Payment</div>
+            </div>
 
-            <form className="bm-form" onSubmit={handleSubmit}>
-              {/* Date Row */}
-              <div className="bm-date-row">
-                <div className="bm-field">
-                  <label>📅 Check-In</label>
-                  <input
-                    type="date"
-                    name="checkIn"
-                    min={today}
-                    value={formData.checkIn}
-                    onChange={handleChange}
-                  />
-                </div>
-                <div className="bm-field">
-                  <label>📅 Check-Out</label>
-                  <input
-                    type="date"
-                    name="checkOut"
-                    min={formData.checkIn || today}
-                    value={formData.checkOut}
-                    onChange={handleChange}
-                  />
-                </div>
-              </div>
+            <AnimatePresence mode="wait">
+              {step === 1 ? (
+                <motion.div 
+                  key="step1" 
+                  className="bm-step-content"
+                  initial={{ opacity: 0, x: -20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  exit={{ opacity: 0, x: 20 }}
+                >
+                  <div className="calendar-wrapper">
+                    <label className="field-label"><CalendarIcon size={14}/> Select Stay Dates</label>
+                    <Calendar
+                      onChange={setDateRange}
+                      value={dateRange}
+                      selectRange={true}
+                      minDate={new Date()}
+                      className="premium-calendar"
+                    />
+                  </div>
 
-              {/* Guests */}
-              <div className="bm-field">
-                <label>👥 Number of Guests</label>
-                <select name="guests" value={formData.guests} onChange={handleChange}>
-                  {[1, 2, 3, 4].map((n) => (
-                    <option key={n} value={n}>{n} Guest{n > 1 ? "s" : ""}</option>
-                  ))}
-                </select>
-              </div>
+                  <div className="bm-details-row">
+                    <div className="bm-field">
+                      <label><Users size={14}/> Guests</label>
+                      <select value={guests} onChange={(e) => setGuests(Number(e.target.value))}>
+                        {[1, 2, 3, 4].map(n => <option key={n} value={n}>{n} Guest{n > 1 ? "s" : ""}</option>)}
+                      </select>
+                    </div>
+                    <div className="bm-summary-preview">
+                      <span>{nights} Night{nights > 1 ? "s" : ""}</span>
+                      <strong>₹{finalTotal.toLocaleString("en-IN")}</strong>
+                    </div>
+                  </div>
 
-              {/* Price Summary */}
-              {nights > 0 && (
-                <div className="bm-summary">
-                  <div className="bm-summary-row">
-                    <span>₹{pricePerNight.toLocaleString("en-IN")} × {nights} night{nights > 1 ? "s" : ""}</span>
-                    <span>₹{total.toLocaleString("en-IN")}</span>
+                  {error && <div className="bm-error">{error}</div>}
+
+                  <button className="bm-confirm-btn" onClick={mode === "edit" ? handleBooking : () => setStep(2)} disabled={loading || nights < 1}>
+                    {mode === "edit" ? (loading ? "Updating..." : "Update Booking") : "Proceed to Payment →"}
+                  </button>
+                </motion.div>
+              ) : (
+                <motion.div 
+                  key="step2" 
+                  className="bm-step-content"
+                  initial={{ opacity: 0, x: 20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  exit={{ opacity: 0, x: -20 }}
+                >
+                  <div className="payment-qr-section">
+                    <div className="qr-box">
+                      <img src="https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=JohnVillaPayment" alt="QR Code" />
+                      <p>Scan to pay <strong>₹{finalTotal.toLocaleString("en-IN")}</strong></p>
+                    </div>
+                    
+                    <div className="upload-section">
+                      <label className="field-label"><Upload size={14}/> Upload Payment Screenshot</label>
+                      <div className="upload-dropzone">
+                        {paymentPreview ? (
+                          <img src={paymentPreview} alt="Proof" className="proof-preview" />
+                        ) : (
+                          <div className="dropzone-placeholder">
+                            <CreditCard size={32}/>
+                            <p>Click to upload proof</p>
+                          </div>
+                        )}
+                        <input type="file" onChange={handleFileSelect} accept="image/*" />
+                      </div>
+                    </div>
                   </div>
-                  <div className="bm-summary-row tax">
-                    <span>Taxes & fees (12%)</span>
-                    <span>₹{Math.round(total * 0.12).toLocaleString("en-IN")}</span>
+
+                  <div className="payment-notice">
+                    ⚠️ Your booking will be <strong>Confirmed</strong> once the admin verifies the payment proof.
                   </div>
-                  <div className="bm-summary-total">
-                    <span>Total</span>
-                    <span>₹{Math.round(total * 1.12).toLocaleString("en-IN")}</span>
+
+                  {error && <div className="bm-error">{error}</div>}
+
+                  <div className="bm-actions">
+                    <button className="bm-back-btn" onClick={() => setStep(1)}>← Back</button>
+                    <button className="bm-confirm-btn" onClick={handleBooking} disabled={loading || !paymentFile}>
+                      {loading ? "Processing..." : "Complete Booking ✓"}
+                    </button>
                   </div>
-                </div>
+                </motion.div>
               )}
-
-              {/* Error */}
-              {error && <div className="bm-error">{error}</div>}
-
-              {/* Submit */}
-              <button className="bm-confirm-btn" type="submit" disabled={loading}>
-                {loading ? (
-                  <span className="bm-spinner" />
-                ) : isEdit ? (
-                  "Update Booking ✓"
-                ) : (
-                  "Confirm Booking"
-                )}
-              </button>
-            </form>
+            </AnimatePresence>
           </>
         ) : (
-          /* Success Screen */
-          <div className="bm-success">
-            <div className="bm-success-icon">{isEdit ? "✏️" : "✅"}</div>
-            <h2>{isEdit ? "Booking Updated!" : "Booking Confirmed!"}</h2>
-            {!isEdit && <p className="bm-booking-id">Booking ID: <strong>{bookingId}</strong></p>}
+          <motion.div 
+            className="bm-success"
+            initial={{ scale: 0.8, opacity: 0 }}
+            animate={{ scale: 1, opacity: 1 }}
+          >
+            <CheckCircle size={64} color="var(--accent)"/>
+            <h2>Booking Submitted!</h2>
             <div className="bm-success-details">
-              <div>{activeRoom?.icon} {activeRoom?.type} Room · Room {activeRoom?.roomNumber}</div>
-              <div>📅 {formatDate(formData.checkIn)} → {formatDate(formData.checkOut)}</div>
-              <div>🌙 {nights} Night{nights > 1 ? "s" : ""} · 👥 {formData.guests} Guest{formData.guests > 1 ? "s" : ""}</div>
-              <div className="bm-total-final">
-                Total Price: ₹{Math.round(total * 1.12).toLocaleString("en-IN")}
-              </div>
+              <p>Booking ID: <strong>#{bookingId?.slice(-6).toUpperCase()}</strong></p>
+              <p>Dates: <strong>{formatDate(checkIn)} - {formatDate(checkOut)}</strong></p>
+              <p>Room: <strong>{activeRoom.type} Room</strong></p>
             </div>
-            {!isEdit && (
-              <p className="bm-success-note">
-                View your booking in <strong>My Account</strong> dashboard.
-              </p>
-            )}
+            <p className="success-note">Your payment is being verified. You can track the status in your dashboard.</p>
             <button className="bm-confirm-btn" onClick={onClose}>Done</button>
-          </div>
+          </motion.div>
         )}
-      </div>
+      </motion.div>
     </div>
   );
 }

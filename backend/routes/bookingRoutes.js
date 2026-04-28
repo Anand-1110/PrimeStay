@@ -28,7 +28,7 @@ router.post('/', verifyToken, async (req, res) => {
     for (const room of candidateRooms) {
       const conflict = await Booking.findOne({
         roomId: room.roomNumber,
-        status:  'Confirmed',
+        status:  { $in: ['Confirmed', 'Pending Payment'] },
         checkIn:  { $lt: new Date(checkOut) },
         checkOut: { $gt: new Date(checkIn) }
       });
@@ -96,7 +96,7 @@ router.put('/:id', verifyToken, async (req, res) => {
     const conflict = await Booking.findOne({
       _id:    { $ne: bookingId },
       roomId: existing.roomId,
-      status: 'Confirmed',
+      status: { $in: ['Confirmed', 'Pending Payment'] },
       checkIn:  { $lt: new Date(checkOut) },
       checkOut: { $gt: new Date(checkIn) }
     });
@@ -139,6 +139,99 @@ router.patch('/:id/cancel', verifyToken, async (req, res) => {
     res.json(booking);
   } catch (err) {
     res.status(500).json({ message: 'Server error cancelling booking', error: err.message });
+  }
+});
+
+// GET /api/bookings/stats
+// Admin analytics
+router.get('/stats', verifyToken, async (req, res) => {
+  try {
+    const allBookings = await Booking.find({ status: { $ne: 'Cancelled' } });
+    const allRooms = await Room.find();
+
+    // 1. Total Revenue
+    const totalRevenue = allBookings.reduce((sum, b) => sum + (b.totalPrice || 0), 0);
+
+    // 2. Revenue by Month (Last 6 Months)
+    const monthlyRevenue = [];
+    for (let i = 5; i >= 0; i--) {
+      const d = new Date();
+      d.setMonth(d.getMonth() - i);
+      const monthLabel = d.toLocaleString('default', { month: 'short' });
+      const year = d.getFullYear();
+      const month = d.getMonth();
+
+      const rev = allBookings
+        .filter(b => {
+          const bd = new Date(b.bookedOn);
+          return bd.getMonth() === month && bd.getFullYear() === year;
+        })
+        .reduce((sum, b) => sum + (b.totalPrice || 0), 0);
+      
+      monthlyRevenue.push({ name: monthLabel, revenue: rev });
+    }
+
+    // 3. Occupancy
+    const occupiedCount = allRooms.filter(r => r.status === 'Booked').length;
+    const maintenanceCount = allRooms.filter(r => r.status === 'Maintenance').length;
+    const availableCount = allRooms.length - occupiedCount - maintenanceCount;
+
+    // 4. Room Type Popularity
+    const roomTypeStats = {};
+    allBookings.forEach(b => {
+      roomTypeStats[b.roomType] = (roomTypeStats[b.roomType] || 0) + 1;
+    });
+    const popularity = Object.keys(roomTypeStats).map(type => ({
+      name: type,
+      value: roomTypeStats[type]
+    }));
+
+    res.json({
+      totalRevenue,
+      monthlyRevenue,
+      occupancy: [
+        { name: 'Available', value: availableCount },
+        { name: 'Occupied', value: occupiedCount },
+        { name: 'Maintenance', value: maintenanceCount }
+      ],
+      popularity
+    });
+  } catch (err) {
+    res.status(500).json({ message: 'Error fetching stats', error: err.message });
+  }
+});
+
+// PATCH /api/bookings/:id/payment
+// User uploads payment proof
+router.patch('/:id/payment', verifyToken, async (req, res) => {
+  try {
+    const { paymentProof } = req.body;
+    const booking = await Booking.findByIdAndUpdate(
+      req.params.id,
+      { paymentProof, paymentStatus: 'Pending', status: 'Pending Payment' },
+      { new: true }
+    );
+    res.json(booking);
+  } catch (err) {
+    res.status(500).json({ message: 'Error updating payment proof', error: err.message });
+  }
+});
+
+// PATCH /api/bookings/:id/verify
+// Admin verifies payment
+router.patch('/:id/verify', verifyToken, async (req, res) => {
+  try {
+    const { paymentStatus } = req.body; // 'Verified' or 'Declined'
+    const status = paymentStatus === 'Verified' ? 'Confirmed' : 'Pending Payment';
+    
+    const booking = await Booking.findByIdAndUpdate(
+      req.params.id,
+      { paymentStatus, status },
+      { new: true }
+    );
+    res.json(booking);
+  } catch (err) {
+    res.status(500).json({ message: 'Error verifying payment', error: err.message });
   }
 });
 

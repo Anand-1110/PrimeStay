@@ -102,7 +102,9 @@ function Dashboard() {
 
       {/* Navbar */}
       <nav className="db-navbar">
-        <div className="db-logo">🏨 John Villa</div>
+        <div className="db-logo">
+          <span style={{color: 'var(--accent)'}}>🏨</span> Prime Stay
+        </div>
         <div className="db-nav-right">
           <button className="db-back-btn" onClick={() => navigate("/")}>
             ← Back to Home
@@ -333,7 +335,7 @@ function Dashboard() {
 
       {/* Footer */}
       <footer className="db-footer">
-        © 2026 John Villa Hotel · All rights reserved · Privacy Policy
+        © 2026 Prime Stay Hotel · All rights reserved · Privacy Policy
       </footer>
     </div>
   );

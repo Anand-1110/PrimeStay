@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import { ArrowRight } from "lucide-react";
 import LoginModal from "./LoginModal";
 import BookingModal from "./BookingModal";
 import "./Home.css";
@@ -134,23 +135,25 @@ function Home() {
 
       {/* Navbar */}
       <nav className="navbar">
-        <div className="logo">🏨 John Villa</div>
+        <div className="logo">
+          <span style={{color: 'var(--accent)'}}>🏨</span> Prime Stay
+        </div>
         <div className="nav-links">
-          <a href="#home">Home</a>
-          <a href="#rooms">Rooms</a>
+          <a href="/">Home</a>
+          <a href="/rooms" onClick={(e) => { e.preventDefault(); navigate("/rooms"); }}>Rooms</a>
           <a href="#amenities">Amenities</a>
           <a href="#reviews">Reviews</a>
 
           {isLoggedIn ? (
             <>
               {localStorage.getItem("jv_user_role") === "admin" && (
-                <button className="my-account-btn" onClick={() => navigate("/admin")} style={{background:"#1e40af",marginRight:"8px"}}>Admin Panel</button>
+                <button className="my-account-btn" onClick={() => navigate("/admin")} style={{background:"var(--primary)", border: "1px solid var(--accent)"}}>Admin Panel</button>
               )}
               <button className="my-account-btn" onClick={goToDashboard}>My Account</button>
               <button className="signout-btn" onClick={handleSignOut}>Sign Out</button>
             </>
           ) : (
-            <button onClick={openLogin}>My Account</button>
+            <button onClick={openLogin}>Sign In</button>
           )}
         </div>
       </nav>
@@ -158,21 +161,20 @@ function Home() {
       {/* Hero */}
       <section className="hero" id="home">
         <div className="hero-content">
-          <span className="badge">⭐ Rated #1 Hotel in the City</span>
-          <h1>Experience Luxury at <span className="highlight">John Villa</span></h1>
+          <span className="badge">✨ Experience the Pinnacle of Luxury</span>
+          <h1>Your Sanctuary of <span className="highlight">Elegance</span> & Comfort</h1>
           <p>
-            Discover world-class comfort, stunning views, and exceptional service.
-            Your perfect getaway starts here.
+            Immerse yourself in world-class hospitality where every detail is 
+            crafted for your ultimate relaxation. Welcome to the city's finest escape.
           </p>
-          <div className="hero-buttons">
-            <button className="main-btn" onClick={() => handleBookNow(rooms.find(r => r.status === "Available"))}>
-              Book Your Stay
+          <div className="hero-btns">
+            <button className="primary-btn" onClick={() => navigate("/rooms")}>
+              Explore Our Rooms <ArrowRight size={18} />
             </button>
-            <a href="#rooms" className="outline-btn">Explore Rooms</a>
           </div>
         </div>
         <div className="hero-image">
-          <img src={heroMain} alt="John Villa Luxury Hotel" className="hotel-photo" />
+          <img src={heroMain} alt="Prime Stay Luxury Hotel" className="hotel-photo" />
         </div>
       </section>
 
@@ -181,19 +183,19 @@ function Home() {
         <div className="container stats-grid">
           <div className="stat-item">
             <h3>500+</h3>
-            <p>Happy Guests</p>
+            <p>Elite Guests</p>
           </div>
           <div className="stat-item">
             <h3>30</h3>
-            <p>Total Rooms</p>
+            <p>Boutique Rooms</p>
           </div>
           <div className="stat-item">
             <h3>15+</h3>
-            <p>Years Experience</p>
+            <p>Years of Service</p>
           </div>
           <div className="stat-item">
             <h3>4.9★</h3>
-            <p>Average Rating</p>
+            <p>Guest Rating</p>
           </div>
         </div>
       </section>
@@ -337,7 +339,7 @@ function Home() {
         <div className="container cta-inner">
           <h2>Ready for an Unforgettable Stay?</h2>
           <p>Book today and enjoy exclusive member discounts on all room types.</p>
-          <button className="main-btn" onClick={() => handleBookNow(rooms.find(r => r.status === "Available"))}>
+          <button className="primary-btn" style={{ margin: "0 auto" }} onClick={() => handleBookNow(rooms.find(r => r.status === "Available"))}>
             Book Now — Limited Availability
           </button>
         </div>
@@ -345,27 +347,27 @@ function Home() {
 
       {/* Footer */}
       <footer className="footer">
-        <div className="footer-grid">
+        <div className="container footer-grid">
           <div>
-            <h4>🏨 John Villa</h4>
+            <h4>🏨 Prime Stay</h4>
             <p>Luxury stays for every traveller. Your comfort is our priority.</p>
           </div>
           <div>
             <h4>Quick Links</h4>
-            <a href="#home">Home</a>
-            <a href="#rooms">Rooms</a>
+            <a href="/">Home</a>
+            <a href="/rooms" onClick={(e) => { e.preventDefault(); navigate("/rooms"); }}>Rooms</a>
             <a href="#amenities">Amenities</a>
             <a href="#reviews">Reviews</a>
           </div>
           <div>
-            <h4>Contact</h4>
+            <h4>Prime Stay</h4>
             <p>📍 123 Villa Street, City</p>
             <p>📞 +91 98765 43210</p>
-            <p>✉️ info@johnvilla.com</p>
+            <p>✉️ info@primestay.com</p>
           </div>
         </div>
         <div className="footer-bottom">
-          © 2026 John Villa Hotel. All rights reserved.
+          © 2026 Prime Stay Hotel · All rights reserved · Privacy Policy
         </div>
       </footer>
 

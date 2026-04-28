@@ -1,8 +1,13 @@
 import React, { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
+import { 
+  BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, 
+  PieChart, Pie, Cell, Legend 
+} from "recharts";
 import "./AdminDashboard.css";
 
 const STATUSES = ["Available", "Booked", "Maintenance"];
+const COLORS = ["#10b981", "#3b82f6", "#f97316", "#a855f7"];
 const getToken = () => localStorage.getItem("jv_token") || "";
 const API = "http://localhost:5000";
 
@@ -10,30 +15,41 @@ function AdminDashboard() {
   const navigate  = useNavigate();
   const [activeTab, setActiveTab] = useState("overview");
 
-  // Guard: redirect if not admin
-  useEffect(() => {
-    const token = localStorage.getItem("jv_token");
-    const role  = localStorage.getItem("jv_user_role");
-    if (!token || role !== "admin") navigate("/");
-  }, [navigate]);
-
   // --- Data Fetching ---
   const [bookings, setBookings] = useState([]);
   const [users,    setUsers]    = useState([]);
   const [rooms,    setRooms]    = useState([]);
+  const [stats,    setStats]    = useState(null);
 
   useEffect(() => {
     const token = getToken();
     Promise.all([
       fetch(`${API}/api/bookings`,    { headers: { "Authorization": `Bearer ${token}` } }).then(r => r.json()),
       fetch(`${API}/api/auth/users`,  { headers: { "Authorization": `Bearer ${token}` } }).then(r => r.json()),
-      fetch(`${API}/api/rooms`).then(r => r.json())
-    ]).then(([bookingsData, usersData, roomsData]) => {
+      fetch(`${API}/api/rooms`).then(r => r.json()),
+      fetch(`${API}/api/bookings/stats`, { headers: { "Authorization": `Bearer ${token}` } }).then(r => r.json())
+    ]).then(([bookingsData, usersData, roomsData, statsData]) => {
       setBookings(Array.isArray(bookingsData) ? bookingsData : []);
       setUsers(Array.isArray(usersData)        ? usersData    : []);
       setRooms(Array.isArray(roomsData)        ? roomsData    : []);
+      setStats(statsData);
     }).catch(err => console.error("Error fetching admin data:", err));
   }, []);
+
+  // --- Handlers ---
+  const handleVerifyPayment = async (id, paymentStatus) => {
+    try {
+      const res = await fetch(`${API}/api/bookings/${id}/verify`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json", "Authorization": `Bearer ${getToken()}` },
+        body: JSON.stringify({ paymentStatus })
+      });
+      if (res.ok) {
+        const updated = await res.json();
+        setBookings(prev => prev.map(b => b._id === id ? updated : b));
+      }
+    } catch (err) { console.error("Error verifying payment:", err); }
+  };
 
   // --- Booking filter ---
   const [bookingFilter, setBookingFilter] = useState("All");
@@ -156,8 +172,8 @@ function AdminDashboard() {
         <div className="ad-sidebar-brand">
           <div className="ad-sidebar-logo">🏨</div>
           <div>
-            <h2>John Villa</h2>
-            <span>Admin Panel</span>
+            <h2>Prime Stay</h2>
+            <span style={{color: 'var(--accent)'}}>🏨</span> Prime Stay
           </div>
         </div>
 
@@ -190,11 +206,11 @@ function AdminDashboard() {
         {/* Top bar */}
         <div className="ad-topbar">
           <div>
-            <h1 className="ad-page-title">
+            <h1 className="modal-title">Prime Stay
               {tabs.find(t => t.key === activeTab)?.icon}{" "}
               {tabs.find(t => t.key === activeTab)?.label}
             </h1>
-            <p className="ad-page-sub">John Villa Hotel Management</p>
+            <p className="ad-page-sub">Prime Stay Hotel Management</p>
           </div>
           <div className="ad-admin-pill">
             👤 {localStorage.getItem("jv_user_email")}
@@ -207,19 +223,59 @@ function AdminDashboard() {
             <div className="ad-stats-grid">
               <div className="ad-stat-card blue">
                 <div className="ad-stat-icon">🛏️</div>
-                <div><h3>{availableRooms}/{rooms.length}</h3><p>Available Rooms</p></div>
+                <div><h3>{stats?.occupancy[1].value}/{rooms.length}</h3><p>Available Rooms</p></div>
               </div>
               <div className="ad-stat-card green">
                 <div className="ad-stat-icon">📋</div>
-                <div><h3>{confirmedBookings.length}</h3><p>Active Bookings</p></div>
+                <div><h3>{bookings.filter(b => b.status === "Confirmed").length}</h3><p>Confirmed Bookings</p></div>
               </div>
               <div className="ad-stat-card purple">
                 <div className="ad-stat-icon">💰</div>
-                <div><h3>₹{totalRevenue.toLocaleString("en-IN")}</h3><p>Total Revenue</p></div>
+                <div><h3>₹{stats?.totalRevenue.toLocaleString("en-IN")}</h3><p>Total Revenue</p></div>
               </div>
               <div className="ad-stat-card orange">
                 <div className="ad-stat-icon">👥</div>
                 <div><h3>{users.length}</h3><p>Registered Users</p></div>
+              </div>
+            </div>
+
+            <div className="ad-charts-row">
+              <div className="ad-section chart-card">
+                <h2 className="ad-section-title">📈 Revenue Trend (Last 6 Months)</h2>
+                <div style={{ width: '100%', height: 300 }}>
+                  <ResponsiveContainer>
+                    <BarChart data={stats?.monthlyRevenue}>
+                      <CartesianGrid strokeDasharray="3 3" vertical={false} />
+                      <XAxis dataKey="name" />
+                      <YAxis />
+                      <Tooltip />
+                      <Bar dataKey="revenue" fill="var(--primary)" radius={[4, 4, 0, 0]} />
+                    </BarChart>
+                  </ResponsiveContainer>
+                </div>
+              </div>
+
+              <div className="ad-section chart-card">
+                <h2 className="ad-section-title">🍩 Room Occupancy</h2>
+                <div style={{ width: '100%', height: 300 }}>
+                  <ResponsiveContainer>
+                    <PieChart>
+                      <Pie
+                        data={stats?.occupancy}
+                        innerRadius={60}
+                        outerRadius={80}
+                        paddingAngle={5}
+                        dataKey="value"
+                      >
+                        {stats?.occupancy.map((entry, index) => (
+                          <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                        ))}
+                      </Pie>
+                      <Tooltip />
+                      <Legend />
+                    </PieChart>
+                  </ResponsiveContainer>
+                </div>
               </div>
             </div>
 
@@ -234,37 +290,6 @@ function AdminDashboard() {
                   </div>
                 ))}
               </div>
-            </div>
-
-            <div className="ad-section">
-              <h2 className="ad-section-title">📋 Recent Bookings</h2>
-              {bookings.length === 0 ? (
-                <div className="ad-empty">No bookings yet.</div>
-              ) : (
-                <div className="ad-table-wrap">
-                  <table className="ad-table">
-                    <thead>
-                      <tr>
-                        <th>Booking ID</th><th>Room</th><th>Check-In</th>
-                        <th>Check-Out</th><th>Guests</th><th>Total</th><th>Status</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {[...bookings].reverse().slice(0, 5).map(b => (
-                        <tr key={b._id}>
-                          <td className="ad-mono">#{b._id.slice(-6).toUpperCase()}</td>
-                          <td>{b.roomType} · Room {b.roomId}</td>
-                          <td>{formatDate(b.checkIn)}</td>
-                          <td>{formatDate(b.checkOut)}</td>
-                          <td>{b.guests}</td>
-                          <td>₹{(b.totalPrice || 0).toLocaleString("en-IN")}</td>
-                          <td><span className={`ad-badge ${statusColor(b.status)}`}>{b.status}</span></td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
-              )}
             </div>
           </div>
         )}
@@ -380,7 +405,7 @@ function AdminDashboard() {
               <div className="ad-section-head-row">
                 <h2 className="ad-section-title">All Bookings ({bookings.length})</h2>
                 <div className="ad-filter-row">
-                  {["All", "Confirmed", "Cancelled"].map(f => (
+                  {["All", "Confirmed", "Cancelled", "Pending Payment"].map(f => (
                     <button
                       key={f}
                       className={`ad-filter-btn${bookingFilter === f ? " active" : ""}`}
@@ -400,22 +425,42 @@ function AdminDashboard() {
                     <thead>
                       <tr>
                         <th>Booking ID</th><th>Customer</th><th>Room</th>
-                        <th>Check-In</th><th>Check-Out</th><th>Nights</th>
-                        <th>Guests</th><th>Total Price</th><th>Status</th>
+                        <th>Dates</th><th>Total</th><th>Payment Proof</th><th>Actions</th>
                       </tr>
                     </thead>
                     <tbody>
                       {[...filteredBookings].reverse().map(b => (
                         <tr key={b._id}>
                           <td className="ad-mono">#{b._id.slice(-6).toUpperCase()}</td>
-                          <td className="ad-mono">{b.customerId || "—"}</td>
+                          <td className="ad-mono" style={{fontSize:'12px'}}>{b.customerId}</td>
                           <td>{b.roomType} · #{b.roomId}</td>
-                          <td>{formatDate(b.checkIn)}</td>
-                          <td>{formatDate(b.checkOut)}</td>
-                          <td>{b.nights}</td>
-                          <td>{b.guests}</td>
+                          <td>{formatDate(b.checkIn)} - {formatDate(b.checkOut)}</td>
                           <td>₹{(b.totalPrice || 0).toLocaleString("en-IN")}</td>
-                          <td><span className={`ad-badge ${statusColor(b.status)}`}>{b.status}</span></td>
+                          <td>
+                            {b.paymentProof ? (
+                              <a href={`${API}${b.paymentProof}`} target="_blank" rel="noreferrer" className="ad-proof-link">View Proof 📄</a>
+                            ) : (
+                              <span className="ad-no-proof">None</span>
+                            )}
+                          </td>
+                          <td>
+                            <div style={{display:'flex', gap:'5px'}}>
+                              <button 
+                                className="ad-action-btn verify" 
+                                onClick={() => handleVerifyPayment(b._id, 'Verified')}
+                                disabled={b.paymentStatus === 'Verified'}
+                              >
+                                {b.paymentStatus === 'Verified' ? '✓ Verified' : 'Verify'}
+                              </button>
+                              <button 
+                                className="ad-action-btn decline"
+                                onClick={() => handleVerifyPayment(b._id, 'Declined')}
+                                disabled={b.paymentStatus === 'Verified'}
+                              >
+                                Decline
+                              </button>
+                            </div>
+                          </td>
                         </tr>
                       ))}
                     </tbody>

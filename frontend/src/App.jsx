@@ -1,5 +1,6 @@
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import Home from "./pages/Home";
+import RoomsPage from "./pages/RoomsPage";
 import Dashboard from "./pages/Dashboard";
 import AdminDashboard from "./pages/AdminDashboard";
 import { PrivateRoute, AdminRoute } from "./pages/PrivateRoute";
@@ -11,6 +12,7 @@ function App() {
         {/* Public */}
         <Route path="/"     element={<Home />} />
         <Route path="/home" element={<Home />} />
+        <Route path="/rooms" element={<RoomsPage />} />
 
         {/* Customer — requires login */}
         <Route
